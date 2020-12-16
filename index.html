@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autonomia de nobreaks</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #333;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+
+        .app {
+            display: flex;
+            height: 100vh;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .app__container {
+            max-width: 420px;
+        }
+
+        .app__title {
+            text-align: center;
+        }
+
+        .app__fieldset {
+            border: none;
+        }
+
+        .app__label {
+            display: block;
+            padding: .6em 0;
+        }
+
+        .app__input {
+            display: block;
+            width: 100%;
+            padding: .4em 0;
+        }
+
+        .app__button {
+            display: block;
+            width: 100%;
+            padding: .4em 0;
+            margin-top: 1em;
+            cursor: pointer;
+        }
+
+        .app__result {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="app">
+        <div class="app__container">
+            <h1 class="app__title">Calcule a autonomia do seu nobreak</h1>
+            <div id="app">
+                <fieldset class="app__fieldset">
+                    <label class="app__label" for="carga">Carga Aplicada (W)</label>
+                    <input class="app__input" type="number" step="0.01" v-model="carga" id="carga">
+                    <label class="app__label" for="tensao">Tensão da Bateria (V)</label>
+                    <input class="app__input" type="number" step="0.01" v-model="tensao" id="tensao">
+                    <label class="app__label" for="capacidade">Capacidade da Bateria (Ah)</label>
+                    <input class="app__input" type="number" step="0.01" v-model="capacidade" id="capacidade">
+                    <label class="app__label" for="quantidade">Quantidade de Baterias</label>
+                    <input class="app__input" type="number" v-model="quantidade" id="quantidade">
+                    <button class="app__button" @click="calcularAutonomia">Calcular</button>
+                </fieldset>
+                <div class="app__result">
+                    <h2>Autonomia</h2>
+                    <p>{{ resultado.horas }}:{{ resultado.minutos }}:{{ resultado.segundos }}</p>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script>
+        let app = new Vue({
+            el: '#app',
+            data: {
+                carga: null,
+                tensao: null,
+                capacidade: null,
+                quantidade: null,
+                resultado: {
+                    horas: "00",
+                    minutos: "00",
+                    segundos: "00",
+                },
+            },
+            methods: {
+                calcularAutonomia: function () {
+                    if (this.carga != null
+                        && this.tensao != null
+                        && this.capacidade != null
+                        && this.quantidade != null) {
+
+                        let carga = parseFloat(this.carga);
+                        let tensao = parseFloat(this.tensao);
+                        let capacidade = parseFloat(this.capacidade);
+                        let quantidade = parseFloat(this.quantidade);
+
+                        let nnom = carga / (tensao * 0.85) / (capacidade * quantidade);
+                        let ut = -0.184 * Math.log(nnom) + 0.496;
+                        let cargautil = ut * capacidade * quantidade;
+                        let corrente = nnom * capacidade * quantidade;
+                        let min = cargautil / corrente * 60;
+
+                        let horas = Math.trunc(min / 60);
+                        if (horas <= 9) {
+                            horas = "0".concat(horas);
+                        }
+
+                        let minutos = Math.trunc(min % 60);
+                        if (minutos <= 9) {
+                            minutos = "0".concat(minutos);
+                        }
+
+                        let seg = Math.trunc((min % 60 - minutos) * 60);
+                        if (seg <= 9) {
+                            seg = "0".concat(seg);
+                        }
+
+                        this.resultado.horas = horas;
+                        this.resultado.minutos = minutos;
+                        this.resultado.segundos = seg;
+                    }
+                }
+            }
+        })
+    </script>
+
+    <script>
+
+    </script>
+
+</body>
+
+</html>
